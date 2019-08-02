@@ -1,0 +1,224 @@
+
+Description:
+
+	FritzingCreateFzpConnectors.py is a python script which creates the 
+connectors section of an fzp file to partially automate modifying fzp files 
+used by the Fritzing EDA program (fritzing.org). The intent is to make it 
+easier to add or renumber the connector section of an existing fzp file (it
+does not create a complete fzp file, although it could be modified to do so). 
+One use is to correct a fzp file which has the connectors out of order (not 
+starting with connector 0) or out of sequence (not starting at connector 0
+and increasing by one til the last connector). Another use is to add new
+connectors to the end of an existing fzp file. The new connectors have to then
+be manually added to the associated svg files, but this makes adding the 
+necessary xml to the fzp file easier. To accommodate adding connectors to an
+existing file, you can optionally add a starting connector number on the 
+command line. 
+
+FritzingCreateFzpConnectors.py Output-file Number-of-connectors
+
+is the minimimal command. It defaults to no breadboard terminalId and starts 
+at connector0. You can optionally add a starting connector number by adding it
+to the end of the command:
+
+FritzingCreateFzpConnectors.py Out 2 2
+
+which will produce a 2 connector file starting at connector2 (so connector2 and
+connector3)
+
+getopt type option flags will modify the script behaviour as follows:
+
+ -b | --breadboard-terminalId   : Emit breadboard TerminalId
+
+    By default the script does not emit the breadboard terminalId field because
+    it is not normally used. If you need the field using the -b flag will 
+    cause the script to emit it. 
+
+ -o | --overwrite               : Overwrite the output file if it exists
+
+    By default the script will print 
+
+    Error: File t already exists.
+
+    followed by the usage message if the output file already exists to prevent
+    overwriting a previous run. The -o flag causes the file to be overwritten
+    without comment. 
+
+ -p | --no-pcb-layer            : omit pcb layer
+
+    In cases where you don't want a pcb view, this flag will supress all of
+    the pcbview xml in the connnector definition. You should still manually 
+    remove the pcbview definition from before the connectors section in the 
+    fzp file (although not doing so will still work fine but will then output 
+    the silkscreen layer if it is present in the pcb svg which may be 
+    undesireable).
+
+ -s | --no-schematic-terminalId : Don't emit schematic terminalId
+
+    Although I can't think of a case where I would want to supress the 
+    schematic termanalId, if you should need to do so setting this flag will
+    supress the terminalId field in the schematic section of the connector. 
+
+Some examples of commands followed by their output:
+
+default case:
+
+FritzingCreateFzpConnectors.py t 2
+
+creates a file t which contains:
+
+      <connector id="connector0" type="male" name="">
+        <description></description>
+        <views>
+          <breadboardView>
+            <p svgId="connector0pin" layer="breadboard"/>
+          </breadboardView>
+          <schematicView>
+            <p svgId="connector0pin" layer="schematic" terminalId="connector0terminal"/>
+          </schematicView>
+          <pcbView>
+            <p svgId="connector0pin" layer="copper0"/>
+            <p svgId="connector0pin" layer="copper1"/>
+          </pcbView>
+        </views>
+      </connector>
+      <connector id="connector1" type="male" name="">
+        <description></description>
+        <views>
+          <breadboardView>
+            <p svgId="connector1pin" layer="breadboard"/>
+          </breadboardView>
+          <schematicView>
+            <p svgId="connector1pin" layer="schematic" terminalId="connector1terminal"/>
+          </schematicView>
+          <pcbView>
+            <p svgId="connector1pin" layer="copper0"/>
+            <p svgId="connector1pin" layer="copper1"/>
+          </pcbView>
+        </views>
+      </connector>
+
+which may then be added or substituted to the connectors section of an existing
+fzp file to add or modify connectors. Of note is that the name and description
+fields are blank and thus need to be addedi or copied from the current 
+connector definitions. By default the breadboard terminalId is omitted 
+(although there is an option for adding it).
+
+Examples of the output from the various options:
+
+Optional starting connector number (connectors start at 2) to add new 
+connectors to an existing file (or correct the sequence after a certain point
+in the file). This would be inserted after connectors 0 and 1:
+
+FritzingCreateFzpConnectors.py t 2 2
+
+creates a file t which contains:
+
+      <connector id="connector2" type="male" name="">
+        <description></description>
+        <views>
+          <breadboardView>
+            <p svgId="connector2pin" layer="breadboard"/>
+          </breadboardView>
+          <schematicView>
+            <p svgId="connector2pin" layer="schematic" terminalId="connector2terminal"/>
+          </schematicView>
+          <pcbView>
+            <p svgId="connector2pin" layer="copper0"/>
+            <p svgId="connector2pin" layer="copper1"/>
+          </pcbView>
+        </views>
+      </connector>
+      <connector id="connector3" type="male" name="">
+        <description></description>
+        <views>
+          <breadboardView>
+            <p svgId="connector3pin" layer="breadboard"/>
+          </breadboardView>
+          <schematicView>
+            <p svgId="connector3pin" layer="schematic" terminalId="connector3terminal"/>
+          </schematicView>
+          <pcbView>
+            <p svgId="connector3pin" layer="copper0"/>
+            <p svgId="connector3pin" layer="copper1"/>
+          </pcbView>
+        </views>
+      </connector>
+
+Default single connector output for comparison:
+
+FritzingCreateFzpConnectors.py t 1
+
+      <connector id="connector0" type="male" name="">
+        <description></description>
+        <views>
+          <breadboardView>
+            <p svgId="connector0pin" layer="breadboard"/>
+          </breadboardView>
+          <schematicView>
+            <p svgId="connector0pin" layer="schematic" terminalId="connector0terminal"/>
+          </schematicView>
+          <pcbView>
+            <p svgId="connector0pin" layer="copper0"/>
+            <p svgId="connector0pin" layer="copper1"/>
+          </pcbView>
+        </views>
+      </connector>
+
+Add the breadboard terminalId back in:
+
+FritzingCreateFzpConnectors.py -b t 1
+
+      <connector id="connector0" type="male" name="">
+        <description></description>
+        <views>
+          <breadboardView>
+            <p svgId="connector0pin" layer="breadboard" terminalId="connector0terminal"/>
+          </breadboardView>
+          <schematicView>
+            <p svgId="connector0pin" layer="schematic" terminalId="connector0terminal"/>
+          </schematicView>
+          <pcbView>
+            <p svgId="connector0pin" layer="copper0"/>
+            <p svgId="connector0pin" layer="copper1"/>
+          </pcbView>
+        </views>
+      </connector>
+
+Remove pcb view (noting that you need to manually remove the pcbview definition
+earlier in the fzp file as well):
+
+FritzingCreateFzpConnectors.py -p t 1
+
+      <connector id="connector0" type="male" name="">
+        <description></description>
+        <views>
+          <breadboardView>
+            <p svgId="connector0pin" layer="breadboard"/>
+          </breadboardView>
+          <schematicView>
+            <p svgId="connector0pin" layer="schematic" terminalId="connector0terminal"/>
+          </schematicView>
+        </views>
+      </connector>
+
+Remove schematic terminalId:
+
+FritzingCreateFzpConnectors.py -s t 1
+
+      <connector id="connector0" type="male" name="">
+        <description></description>
+        <views>
+          <breadboardView>
+            <p svgId="connector0pin" layer="breadboard"/>
+          </breadboardView>
+          <schematicView>
+            <p svgId="connector0pin" layer="schematic"/>
+          </schematicView>
+          <pcbView>
+            <p svgId="connector0pin" layer="copper0"/>
+            <p svgId="connector0pin" layer="copper1"/>
+          </pcbView>
+        </views>
+      </connector>
+
